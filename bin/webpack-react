@@ -1,0 +1,115 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+var mkdirp = require('mkdirp');
+var fs = require('fs-extra');
+var os = require('os');
+var path = require('path');
+var readline = require('readline');
+var sortedObject = require('sorted-object');
+var util = require('util');
+
+var _exit = process.exit;
+var eol = os.EOL;
+var pkg = require('../package.json');
+
+var version = pkg.version;
+
+// Re-assign process.exit because of commander
+// TODO: Switch to a different command framework
+process.exit = exit;
+
+program
+	.version(version, '    --version')
+	.option('-f, --force', 'force on non-empty directory')
+	.parse(process.argv);
+
+if (!exit.exited) {
+	main();
+}
+
+function main() {
+	// Path
+	var destinationPath = program.args.shift() || '.';
+
+	// App name
+	var appName = path.basename(path.resolve(destinationPath));
+
+	isDirectoryEmpty(destinationPath, function(empty) {
+		if (empty || program.force) {
+			createApplication(appName, destinationPath);
+		} else {
+			confirm('destination is not empty, continue? [y/N] ', function(ok) {
+				if (ok) {
+					process.stdin.destroy();
+					createApplication(appName, destinationPath);
+				} else {
+					console.error('aborting');
+					exit(1);
+				}
+			});
+		}
+	});
+}
+
+function createApplication(app_name, destinationPath) {
+	fs.copy(path.join(__dirname, '..', 'template'), destinationPath, function(err) {
+		if (err) {
+			console.log(err);
+		} else {
+			console.log('Successfull! npm install, and start your development.');
+		}
+	});
+}
+
+function confirm(msg, callback) {
+	var rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout
+	});
+
+	rl.question(msg, function(input) {
+		rl.close();
+		callback(/^y|yes|ok|true$/i.test(input));
+	});
+}
+
+/**
+ * Graceful exit for async STDIO
+ */
+
+function exit(code) {
+	// flush output for Node.js Windows pipe bug
+	// https://github.com/joyent/node/issues/6247 is just one bug example
+	// https://github.com/visionmedia/mocha/issues/333 has a good discussion
+	function done() {
+		if (!(draining--)) _exit(code);
+	}
+
+	var draining = 0;
+	var streams = [process.stdout, process.stderr];
+
+	exit.exited = true;
+
+	streams.forEach(function(stream) {
+		// submit empty write request and wait for completion
+		draining += 1;
+		stream.write('', done);
+	});
+
+	done();
+}
+
+/**
+ * Check if the given directory `path` is empty.
+ *
+ * @param {String} path
+ * @param {Function} fn
+ */
+
+function isDirectoryEmpty(path, fn) {
+	fs.readdir(path, function(err, files) {
+		if (err && 'ENOENT' != err.code) throw err;
+		fn(!files || !files.length);
+	});
+}
