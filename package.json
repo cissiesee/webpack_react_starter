@@ -1,5 +1,5 @@
 {
-  "name": "eliminate",
+  "name": "webpack_react_starter",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,7 +7,7 @@
     "build": "webpack",
     "dev": "webpack --progress --colors --watch"
   },
-  "author": "",
+  "author": "huantgzt",
   "license": "ISC",
   "devDependencies": {
     "babel-core": "^6.21.0",
