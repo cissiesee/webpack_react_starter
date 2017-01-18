@@ -3,9 +3,10 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 var CommonsChunkPlugin = require("webpack/lib/optimize/CommonsChunkPlugin");
 var UglifyJsPlugin = require("webpack/lib/optimize/UglifyJsPlugin");
-var argv = process.argv;
 
-console.log(argv);
+var BrowserSyncPlugin = require('browser-sync-webpack-plugin'); 
+
+var argv = process.argv;
 
 var isDev = argv.indexOf('--dev') === -1 ? false : true;
 var afterfix = isDev ? '.js' : '.min.js';
@@ -19,6 +20,16 @@ var plugins = [
 		filename: __dirname + '/build/index.html',
 		template: __dirname + '/app/tpl/index.html',
 		chunks: ['scripts/common' + afterfix, 'index'] // 这个模板对应上面那个节点
+	}),
+	new BrowserSyncPlugin({  
+		// browse to http://localhost:3000/ during development
+		host: '0.0.0.0',
+		port: 3000, //代理后访问的端口
+		proxy: 'localhost:8080',//要代理的端口
+	}, {
+		// prevent BrowserSync from reloading the page
+        // and let Webpack Dev Server take care of this
+		reload: true
 	})
 ];
 
@@ -39,6 +50,10 @@ module.exports = {
 		path: __dirname + '/build',
 		filename: 'scripts/[name]' + afterfix,
 		sourceMapFilename: 'scripts/[name].map'
+	},
+	devServer: {
+    	contentBase: "./build",
+    	inline: true
 	},
 	//devtool: 'source-map',
 	module: {
