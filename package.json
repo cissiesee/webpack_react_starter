@@ -1,6 +1,6 @@
 {
   "name": "webpack-react-creator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "webpack-react application genarator",
   "main": "bin/webpack-react",
   "bin": {

@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 
 var program = require('commander');
-var mkdirp = require('mkdirp');
 var fs = require('fs-extra');
 var os = require('os');
 var path = require('path');
 var readline = require('readline');
-var sortedObject = require('sorted-object');
 var util = require('util');
 
 var _exit = process.exit;
